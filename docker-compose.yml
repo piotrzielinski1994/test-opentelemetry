@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  playlists:
+    container_name: playlists
+    build:
+      context: ./playlists
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    networks:
+      - traefik
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.playlists.entrypoints=websecure
+      - traefik.http.routers.playlists.rule=Host(`playlists.${DOMAIN:-localhost}`)
+
+  videos:
+    container_name: videos
+    build:
+      context: ./videos
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    networks:
+      - traefik
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.videos.entrypoints=websecure
+      - traefik.http.routers.videos.rule=Host(`videos.${DOMAIN:-localhost}`)
+
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:1.6
+    restart: unless-stopped
+    networks:
+      - traefik
+      - internal
+    expose:
+      - 16686
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.jaeger.entrypoints=websecure
+      - traefik.http.routers.jaeger.rule=Host(`jaeger.${DOMAIN:-localhost}`)
+      - traefik.http.services.jaeger.loadbalancer.server.port=16686
+
+networks:
+  traefik:
+    external: true
+  internal:
+    external: false
