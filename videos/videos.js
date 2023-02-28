@@ -16,7 +16,7 @@ app.get('/videos/:videoId', async (req, res) => {
 
   await wait(1000);
 
-  const videoId = req.params.videoId;
+  const videoId = Number(req.params.videoId);
   const video = videosDb.getVideo(videoId);
 
   res.send(video);
