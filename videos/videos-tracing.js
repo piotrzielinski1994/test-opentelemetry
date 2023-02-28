@@ -1,5 +1,5 @@
 import opentelemetry from '@opentelemetry/api';
-import { ConsoleSpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
 import { Resource } from '@opentelemetry/resources';
@@ -15,7 +15,6 @@ const initTracing = (serviceName) => {
     }),
   });
 
-  // provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
   provider.addSpanProcessor(new SimpleSpanProcessor(jaegerExporter));
 
   opentelemetry.trace.setGlobalTracerProvider(provider);

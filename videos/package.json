@@ -5,7 +5,7 @@
   "type": "module",
   "main": "videos.js",
   "scripts": {
-    "start": "nodemon videos.js"
+    "start": "nodemon videos-api.js"
   },
   "keywords": [],
   "author": "",

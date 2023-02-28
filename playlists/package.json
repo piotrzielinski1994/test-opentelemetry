@@ -5,7 +5,7 @@
   "type": "module",
   "main": "playlists.js",
   "scripts": {
-    "start": "nodemon playlists.js"
+    "start": "nodemon playlists-api.js"
   },
   "keywords": [],
   "author": "",

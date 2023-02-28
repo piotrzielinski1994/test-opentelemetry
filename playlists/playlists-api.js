@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { initTracing } from './playlists-tracing.js';
+import initTracing from './playlists-tracing.js';
 import playlistsDb from './playlists-db.js';
 import { videosClient } from './playlists-clients.js';
 
@@ -25,7 +25,7 @@ app.get('/playlists', async (req, res) => {
     for (const videoId of playlist.videoIds) {
       const [videoSpan] = startSpan(`videos-ms | Get ${videoId}`, wrapperContext);
       const video = await videosClient.getVideo(videoId);
-      console.log('@@@ video | ', video);
+      // console.log('@@@ video | ', video);
       videos.push(video);
       videoSpan.end();
     }
