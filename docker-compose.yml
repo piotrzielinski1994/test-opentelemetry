@@ -19,7 +19,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=traefik
       - traefik.http.routers.frontend.entrypoints=websecure
-      - traefik.http.routers.frontend.rule=Host(`frontend.opentelemetry.${DOMAIN:-localhost}`)
+      - traefik.http.routers.frontend.rule=Host(`frontend.${DOMAIN:-localhost}`)
 
   jaeger:
     container_name: jaeger
@@ -40,7 +40,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=traefik
       - traefik.http.routers.jaeger.entrypoints=websecure
-      - traefik.http.routers.jaeger.rule=Host(`jaeger.opentelemetry.${DOMAIN:-localhost}`)
+      - traefik.http.routers.jaeger.rule=Host(`jaeger.${DOMAIN:-localhost}`)
       - traefik.http.services.jaeger.loadbalancer.server.port=16686
 
   playlists:
@@ -60,7 +60,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=traefik
       - traefik.http.routers.playlists.entrypoints=websecure
-      - traefik.http.routers.playlists.rule=Host(`playlists.opentelemetry.${DOMAIN:-localhost}`)
+      - traefik.http.routers.playlists.rule=Host(`playlists.${DOMAIN:-localhost}`)
 
   videos:
     container_name: videos
@@ -79,7 +79,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=traefik
       - traefik.http.routers.videos.entrypoints=websecure
-      - traefik.http.routers.videos.rule=Host(`videos.opentelemetry.${DOMAIN:-localhost}`)
+      - traefik.http.routers.videos.rule=Host(`videos.${DOMAIN:-localhost}`)
 
 networks:
   traefik:
