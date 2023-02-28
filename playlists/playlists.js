@@ -13,7 +13,7 @@ app.get('/playlists', async (req, res) => {
     opentelemetry.ROOT_CONTEXT,
     req.headers
   );
-  const childSpan = tracer.startSpan('childSpan', remoteCtx);
+  const childSpan = tracer.startSpan('GET /playlists', remoteCtx);
 
   const playlists = playlistsDb.getPlaylists();
   const apiPlaylists = await playlists.map(async (playlist) => {
