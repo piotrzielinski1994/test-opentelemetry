@@ -5,9 +5,8 @@ services:
     container_name: frontend
     image: node:18
     tty: true
-    working_dir: /app
     command: bash -c 'npm ci && npm run dev'
-    tty: true
+    working_dir: /app
     volumes:
       - ./frontend/:/app
     restart: unless-stopped
@@ -26,11 +25,11 @@ services:
     container_name: jaeger
     image: jaegertracing/all-in-one:1.6
     restart: unless-stopped
+    expose:
+      - 16686
     networks:
       - traefik
       - internal
-    expose:
-      - 16686
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik
@@ -40,10 +39,14 @@ services:
 
   playlists:
     container_name: playlists
-    build:
-      context: ./playlists
-      dockerfile: ./Dockerfile
+    image: node:18
+    command: bash -c 'npm ci && npm start'
+    working_dir: /app
+    volumes:
+      - ./playlists/:/app
     restart: unless-stopped
+    expose:
+      - 3000
     networks:
       - traefik
       - internal
@@ -55,10 +58,14 @@ services:
 
   videos:
     container_name: videos
-    build:
-      context: ./videos
-      dockerfile: ./Dockerfile
+    image: node:18
+    command: bash -c 'npm ci && npm start'
+    working_dir: /app
+    volumes:
+      - ./videos/:/app
     restart: unless-stopped
+    expose:
+      - 3000
     networks:
       - traefik
       - internal
