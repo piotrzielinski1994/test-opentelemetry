@@ -6,7 +6,6 @@ import {
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
-
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
 import { Resource } from '@opentelemetry/resources';
@@ -22,21 +21,39 @@ export const initTracing = (serviceName) => {
     }),
   });
 
-  provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
+  // provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
   provider.addSpanProcessor(new SimpleSpanProcessor(jaegerExporter));
+
+  trace.setGlobalTracerProvider(provider);
 
   registerInstrumentations({
     instrumentations: [new ExpressInstrumentation(), new HttpInstrumentation()],
   });
 
-  const tracer = trace.getTracer('tracer-application');
-
-  return {
-    tracer,
-    provider,
-  };
+  return trace.getTracer('tracer-application');
 };
 
-export const wait = (timeout) => {
-  return new Promise((resolve) => setTimeout(resolve, timeout));
+export const playlistsDb = {
+  getPlaylists: () => {
+    return [
+      {
+        id: 1,
+        title: 'Playlist 1',
+        videoIds: [1, 2, 3],
+      },
+      {
+        id: 2,
+        title: 'Playlist 2',
+        videoIds: [4, 5, 6],
+      },
+    ];
+  },
+};
+
+export const videosClient = {
+  getVideo: (videoId) => {
+    return fetch(`http://videos:3000/videos/${videoId}`).then((res) =>
+      res.json()
+    );
+  },
 };

@@ -1,21 +1,36 @@
-import { trace, propagation, SpanKind, ROOT_CONTEXT } from '@opentelemetry/api';
-import { wait, initTracing } from './helpers.js';
+import opentelemetry from '@opentelemetry/api';
+import { initTracing, playlistsDb, videosClient } from './playlists-helpers.js';
 import express from 'express';
 import cors from 'cors';
 
-const { tracer, provider } = initTracing('asd2');
-trace.setGlobalTracerProvider(provider);
+const tracer = initTracing('playlists-ms');
 
 const app = express();
 app.use(cors()).listen(3000);
 
-app.get('/', async (req, res) => {
-  const remoteCtx = propagation.extract(ROOT_CONTEXT, req.headers);
+app.get('/playlists', async (req, res) => {
+  const remoteCtx = opentelemetry.propagation.extract(
+    opentelemetry.ROOT_CONTEXT,
+    req.headers
+  );
   const childSpan = tracer.startSpan('childSpan', remoteCtx);
-  await wait(5000);
-  const childSpan2 = tracer.startSpan('childSpan2', childSpan);
-  await wait(1000);
-  childSpan2.end();
-  res.json([]);
+
+  const playlists = playlistsDb.getPlaylists();
+  const apiPlaylists = await playlists.map(async (playlist) => {
+    const videoPromises = playlist.videoIds.map((videoId) => {
+      return videosClient.getVideo(videoId);
+    });
+
+    const videos = await Promise.all(videoPromises);
+
+    return {
+      id: playlist.id,
+      title: playlist.title,
+      videos: videos,
+    };
+  });
+
+  res.json(await Promise.all(apiPlaylists));
+
   childSpan.end();
 });
