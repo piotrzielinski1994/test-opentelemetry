@@ -1,8 +1,9 @@
-const express = require('express');
-const app = express();
-var cors = require('cors');
+import express from 'express';
+import cors from 'cors';
 
-app.use(cors());
+const app = express();
+
+app.use(cors()).listen(3000);
 
 app.get('/', async (req, res) => {
   const playlists = [
@@ -36,11 +37,11 @@ app.get('/', async (req, res) => {
     },
   ];
 
-  await new Promise((resolve) => {
-    setTimeout(resolve, 2000);
-  });
+  await wait(2000);
 
   res.send(playlists);
 });
 
-app.listen(3000);
+function wait(timeout) {
+  return new Promise((resolve) => setTimeout(resolve, timeout));
+}

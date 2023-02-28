@@ -2,6 +2,7 @@
   "name": "playlists",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "playlists.js",
   "scripts": {
     "start": "nodemon playlists.js"
