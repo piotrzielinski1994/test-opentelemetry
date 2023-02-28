@@ -5,7 +5,7 @@ services:
     container_name: frontend
     image: node:18
     tty: true
-    command: bash -c 'npm ci && npm run dev'
+    command: bash -c 'npm install && npm run dev'
     working_dir: /app
     volumes:
       - ./frontend/:/app
@@ -26,7 +26,13 @@ services:
     image: jaegertracing/all-in-one:1.6
     restart: unless-stopped
     expose:
+      - 5775
+      - 6831
+      - 6832
+      - 5778
       - 16686
+      - 14268
+      - 9411
     networks:
       - traefik
       - internal
@@ -40,7 +46,7 @@ services:
   playlists:
     container_name: playlists
     image: node:18
-    command: bash -c 'npm ci && npm start'
+    command: bash -c 'npm install && npm start'
     working_dir: /app
     volumes:
       - ./playlists/:/app
@@ -59,7 +65,7 @@ services:
   videos:
     container_name: videos
     image: node:18
-    command: bash -c 'npm ci && npm start'
+    command: bash -c 'npm install && npm start'
     working_dir: /app
     volumes:
       - ./videos/:/app
