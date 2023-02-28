@@ -18,12 +18,15 @@
 </script>
 
 {#if isLoading}
-  <h2>Loading...</h2>
+  <h1>Loading...</h1>
 {:else if error}
-  <h2 class="error">{error}</h2>
+  <h1 class="error">{error}</h1>
 {:else}
+  <h1>Playlists</h1>
+
   {#each playlists as playlist}
     <h2>{playlist.name}</h2>
+
     <ul>
       {#each playlist.videos as video}
         <li>{video.name}</li>
@@ -35,6 +38,7 @@
 <style>
   :global(body) {
     min-height: 100vh;
+    margin: 0;
     display: grid;
     place-content: center;
   }
