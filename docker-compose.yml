@@ -1,6 +1,43 @@
 version: '3'
 
 services:
+  frontend:
+    container_name: frontend
+    image: node:18
+    tty: true
+    working_dir: /app
+    command: bash -c 'npm ci && npm run dev'
+    tty: true
+    volumes:
+      - ./frontend/:/app
+    restart: unless-stopped
+    expose:
+      - 5173
+    networks:
+      - traefik
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.frontend.entrypoints=websecure
+      - traefik.http.routers.frontend.rule=Host(`frontend.${DOMAIN:-localhost}`)
+
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:1.6
+    restart: unless-stopped
+    networks:
+      - traefik
+      - internal
+    expose:
+      - 16686
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.jaeger.entrypoints=websecure
+      - traefik.http.routers.jaeger.rule=Host(`jaeger.${DOMAIN:-localhost}`)
+      - traefik.http.services.jaeger.loadbalancer.server.port=16686
+
   playlists:
     container_name: playlists
     build:
@@ -30,22 +67,6 @@ services:
       - traefik.docker.network=traefik
       - traefik.http.routers.videos.entrypoints=websecure
       - traefik.http.routers.videos.rule=Host(`videos.${DOMAIN:-localhost}`)
-
-  jaeger:
-    container_name: jaeger
-    image: jaegertracing/all-in-one:1.6
-    restart: unless-stopped
-    networks:
-      - traefik
-      - internal
-    expose:
-      - 16686
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.http.routers.jaeger.entrypoints=websecure
-      - traefik.http.routers.jaeger.rule=Host(`jaeger.${DOMAIN:-localhost}`)
-      - traefik.http.services.jaeger.loadbalancer.server.port=16686
 
 networks:
   traefik:
