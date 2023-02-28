@@ -1,5 +1,10 @@
 import opentelemetry from '@opentelemetry/api';
-import { initTracing, playlistsDb, videosClient } from './playlists-helpers.js';
+import {
+  initTracing,
+  playlistsDb,
+  videosClient,
+  wait,
+} from './playlists-helpers.js';
 import express from 'express';
 import cors from 'cors';
 
@@ -9,28 +14,44 @@ const app = express();
 app.use(cors()).listen(3000);
 
 app.get('/playlists', async (req, res) => {
-  const remoteCtx = opentelemetry.propagation.extract(
+  const remoteContext = opentelemetry.propagation.extract(
     opentelemetry.ROOT_CONTEXT,
     req.headers
   );
-  const childSpan = tracer.startSpan('GET /playlists', remoteCtx);
-
+  const wrapperSpan = tracer.startSpan('GET /playlists', {}, remoteContext);
+  const wrapperContext = opentelemetry.trace.setSpan(
+    remoteContext,
+    wrapperSpan
+  );
+  const dbSpan = tracer.startSpan('db | Get playlists', {}, wrapperContext);
   const playlists = playlistsDb.getPlaylists();
-  const apiPlaylists = await playlists.map(async (playlist) => {
-    const videoPromises = playlist.videoIds.map((videoId) => {
-      return videosClient.getVideo(videoId);
-    });
+  dbSpan.end();
 
-    const videos = await Promise.all(videoPromises);
+  const apiPlaylists = [];
 
-    return {
+  for (const playlist of playlists) {
+    const videos = [];
+
+    for (const videoId of playlist.videoIds) {
+      const videoSpan = tracer.startSpan(
+        `videos-ms | GET /videos/${videoId}`,
+        {},
+        wrapperContext
+      );
+      const video = await videosClient.getVideo(videoId);
+      console.log('@@@ video | ', video);
+      videos.push(video);
+      videoSpan.end();
+    }
+
+    apiPlaylists.push({
       id: playlist.id,
       title: playlist.title,
       videos: videos,
-    };
-  });
+    });
+  }
 
   res.json(await Promise.all(apiPlaylists));
 
-  childSpan.end();
+  wrapperSpan.end();
 });
