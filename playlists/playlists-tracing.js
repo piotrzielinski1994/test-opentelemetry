@@ -4,6 +4,9 @@ import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
 import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
 
 const initTracing = (serviceName) => {
   const jaegerExporter = new JaegerExporter({
@@ -19,6 +22,11 @@ const initTracing = (serviceName) => {
   provider.addSpanProcessor(new SimpleSpanProcessor(jaegerExporter));
 
   opentelemetry.trace.setGlobalTracerProvider(provider);
+
+  registerInstrumentations({
+    instrumentations: [new HttpInstrumentation(), new ExpressInstrumentation()],
+    tracerProvider: provider,
+  });
 
   const tracer = opentelemetry.trace.getTracer('playlists-ms');
 

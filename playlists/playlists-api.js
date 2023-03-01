@@ -3,7 +3,7 @@ import cors from 'cors';
 import initTracing from './playlists-tracing.js';
 import playlistsDb from './playlists-db.js';
 import { videosClient } from './playlists-clients.js';
-import { SpanStatusCode } from '@opentelemetry/api';
+import opentelemetry from '@opentelemetry/api';
 
 const { getContextFromRequest, startSpan } = initTracing('playlists-ms');
 
@@ -25,9 +25,19 @@ app.get('/playlists', async (req, res) => {
 
     for (const videoId of playlist.videoIds) {
       const [videoSpan] = startSpan(`videos-ms | Get ${videoId}`, wrapperContext);
+
+      // let output = {};
+      // const qwe = opentelemetry.propagation.inject(
+      //   opentelemetry.trace.setSpan(wrapperContext, videoSpan),
+      //   output
+      // );
+      // const { traceparent, tracestate } = output;
+
+      // console.log('@@@  | ', qwe, output, traceparent, tracestate);
+
       const video = await videosClient.getVideo(videoId).catch((e) => {
         videoSpan.setStatus({
-          code: SpanStatusCode.ERROR,
+          code: opentelemetry.SpanStatusCode.ERROR,
           message: e.message,
         });
         throw e;
