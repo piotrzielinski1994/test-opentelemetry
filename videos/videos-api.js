@@ -15,10 +15,10 @@ app.get('/videos/:videoId', async (req, res) => {
   const [wrapperSpan, wrapperContext] = startSpan(`GET /video/${videoId}`, remoteContext);
 
   const [dbSpan] = startSpan('db | Get video', wrapperContext);
-  const video = videosDb.getVideo(videoId);
+  const video = await videosDb.getVideo(videoId);
   dbSpan.end();
 
-  await wait(1000);
+  await wait(500);
 
   res.send(video);
   wrapperSpan.end();
