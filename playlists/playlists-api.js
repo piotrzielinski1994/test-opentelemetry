@@ -1,22 +1,25 @@
-import express from 'express';
-import cors from 'cors';
-import initTracing from './playlists-tracing.js';
-import playlistsDb from './playlists-db.js';
-import { videosClient } from './playlists-clients.js';
-import opentelemetry from '@opentelemetry/api';
+const init = require('./playlists-tracing.js');
 
-const { getContextFromRequest, startSpan } = initTracing('playlists-ms');
+init('playlists-service');
+
+const api = require('@opentelemetry/api');
+const express = require('express');
+const cors = require('cors');
+const playlistsDb = require('./playlists-db');
+const { videosClient } = require('./playlists-clients');
 
 const app = express();
-app.use(cors()).listen(3000);
+
+app.use(cors());
+app.listen(3000);
 
 app.get('/playlists', async (req, res) => {
-  const remoteContext = getContextFromRequest(req);
-  const [wrapperSpan, wrapperContext] = startSpan('GET /playlists', remoteContext);
+  // const remoteContext = getContextFromRequest(req);
+  // const [wrapperSpan, wrapperContext] = startSpan('GET /playlists', remoteContext);
 
-  const [dbSpan] = startSpan('db | Get playlists', wrapperContext);
+  // const [dbSpan] = startSpan('db | Get playlists', wrapperContext);
   const playlists = playlistsDb.getPlaylists();
-  dbSpan.end();
+  // dbSpan.end();
 
   const apiPlaylists = [];
 
@@ -24,26 +27,17 @@ app.get('/playlists', async (req, res) => {
     const videos = [];
 
     for (const videoId of playlist.videoIds) {
-      const [videoSpan] = startSpan(`videos-ms | Get ${videoId}`, wrapperContext);
-
-      // let output = {};
-      // const qwe = opentelemetry.propagation.inject(
-      //   opentelemetry.trace.setSpan(wrapperContext, videoSpan),
-      //   output
-      // );
-      // const { traceparent, tracestate } = output;
-
-      // console.log('@@@  | ', qwe, output, traceparent, tracestate);
+      // const [videoSpan] = startSpan(`videos-ms | Get ${videoId}`, wrapperContext);
 
       const video = await videosClient.getVideo(videoId).catch((e) => {
-        videoSpan.setStatus({
-          code: opentelemetry.SpanStatusCode.ERROR,
-          message: e.message,
-        });
+        // videoSpan.setStatus({
+        //   code: opentelemetry.SpanStatusCode.ERROR,
+        //   message: e.message,
+        // });
         throw e;
       });
       videos.push(video);
-      videoSpan.end();
+      // videoSpan.end();
     }
 
     apiPlaylists.push({
@@ -55,5 +49,5 @@ app.get('/playlists', async (req, res) => {
 
   res.json(apiPlaylists);
 
-  wrapperSpan.end();
+  // wrapperSpan.end();
 });

@@ -13,6 +13,6 @@ const getPlaylists = () => {
   ];
 };
 
-export default {
+module.exports = {
   getPlaylists,
 };

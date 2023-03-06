@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
-import { wait } from './videos-helpers.js';
+const dotenv = require('dotenv');
+const { wait } = require('./videos-helpers.js');
 
 dotenv.config();
 
@@ -16,6 +16,6 @@ const getVideo = async (videoId) => {
   };
 };
 
-export default {
+module.exports = {
   getVideo,
 };

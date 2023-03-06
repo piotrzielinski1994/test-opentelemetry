@@ -1,40 +1,31 @@
-import opentelemetry from '@opentelemetry/api';
-import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
-import { Resource } from '@opentelemetry/resources';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+const api = require('@opentelemetry/api');
+const { SimpleSpanProcessor } = require('@opentelemetry/sdk-trace-base');
+const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node');
+const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
+const { Resource } = require('@opentelemetry/resources');
+const { registerInstrumentations } = require('@opentelemetry/instrumentation');
+const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions');
+const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-express');
+const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
 
-const initTracing = (serviceName) => {
-  const jaegerExporter = new JaegerExporter({
-    endpoint: `http://jaeger:14268/api/traces`,
-  });
+api.diag.setLogger(new api.DiagConsoleLogger(), api.DiagLogLevel.DEBUG);
+
+const init = function (serviceName) {
+  const traceExporter = new JaegerExporter({ endpoint: `http://jaeger:14268/api/traces` });
   const provider = new NodeTracerProvider({
     resource: new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
     }),
   });
 
-  provider.addSpanProcessor(new SimpleSpanProcessor(jaegerExporter));
+  provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+  provider.register();
+  registerInstrumentations({
+    instrumentations: [new ExpressInstrumentation(), new HttpInstrumentation()],
+  });
+  const tracer = provider.getTracer(serviceName);
 
-  opentelemetry.trace.setGlobalTracerProvider(provider);
-
-  const tracer = opentelemetry.trace.getTracer('playlists-ms');
-
-  return {
-    tracer: tracer,
-    startSpan: startSpan(tracer),
-    getContextFromRequest: getContextFromRequest,
-  };
+  return { tracer };
 };
 
-const startSpan = (tracer) => (name, parentContext) => {
-  const span = tracer.startSpan(name, {}, parentContext);
-  return [span, opentelemetry.trace.setSpan(parentContext, span)];
-};
-
-const getContextFromRequest = (req) => {
-  return opentelemetry.propagation.extract(opentelemetry.ROOT_CONTEXT, req.headers);
-};
-
-export default initTracing;
+module.exports = init;
