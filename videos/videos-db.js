@@ -10,6 +10,8 @@ const getVideo = async (videoId) => {
   if (hasError && videoId === 6) throw 'Exception';
   if (hasDelay && videoId === 5) await wait(5000);
 
+  await wait(500);
+
   return {
     id: videoId,
     title: `Video ${videoId}`,

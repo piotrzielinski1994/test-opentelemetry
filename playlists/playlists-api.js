@@ -10,10 +10,11 @@ app.use(require('cors')());
 app.listen(3000);
 
 app.get('/playlists', async (req, res) => {
-  // const remoteContext = getContextFromRequest(req);
+  const remoteContext = getContextFromRequest(req);
+  console.log('@@@  | ', remoteContext === api.ROOT_CONTEXT);
   // const [wrapperSpan, wrapperContext] = startSpan('GET /playlists', remoteContext);
 
-  // const [dbSpan] = startSpan('db | Get playlists', wrapperContext);
+  // const [dbSpan] = startSpan('Database | Get playlists', remoteContext);
   const playlists = playlistsDb.getPlaylists();
   // dbSpan.end();
 
@@ -23,9 +24,13 @@ app.get('/playlists', async (req, res) => {
     const videos = [];
 
     for (const videoId of playlist.videoIds) {
-      // const [videoSpan] = startSpan(`videos-ms | Get ${videoId}`, wrapperContext);
-      const video = await videosClient.getVideo(videoId);
-      videos.push(video);
+      // const [videoSpan] = startSpan(`Videos Client | Get ${videoId}`, remoteContext);
+      try {
+        const video = await videosClient.getVideo(videoId);
+        videos.push(video);
+      } catch (error) {
+        console.log('@@@ error | ', error.message);
+      }
       // videoSpan.end();
     }
 

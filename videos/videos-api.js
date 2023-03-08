@@ -1,6 +1,5 @@
 const initTracing = require('./videos-tracing.js');
 const api = require('@opentelemetry/api');
-const { wait } = require('./videos-helpers.js');
 const videosDb = require('./videos-db.js');
 const { getContextFromRequest, startSpan } = initTracing('videos-service');
 
@@ -11,15 +10,14 @@ app.listen(3000);
 app.get('/videos/:videoId', async (req, res) => {
   const videoId = Number(req.params.videoId);
 
-  // const remoteContext = getContextFromRequest(req);
-  // const [wrapperSpan, wrapperContext] = startSpan(`GET /video/${videoId}`, remoteContext);
+  const remoteContext = getContextFromRequest(req);
+  console.log('@@@  | ', remoteContext === api.ROOT_CONTEXT);
+  const [wrapperSpan, wrapperContext] = startSpan(`GET /video/${videoId}`, remoteContext);
 
-  // const [dbSpan] = startSpan('db | Get video', wrapperContext);
+  const [dbSpan] = startSpan('Database | Get video', wrapperContext);
   const video = await videosDb.getVideo(videoId);
-  // dbSpan.end();
-
-  await wait(500);
+  dbSpan.end();
 
   res.send(video);
-  // wrapperSpan.end();
+  wrapperSpan.end();
 });
