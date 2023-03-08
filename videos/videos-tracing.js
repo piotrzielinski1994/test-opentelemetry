@@ -8,7 +8,7 @@ const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventi
 const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-express');
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
 
-api.diag.setLogger(new api.DiagConsoleLogger(), api.DiagLogLevel.DEBUG);
+// api.diag.setLogger(new api.DiagConsoleLogger(), api.DiagLogLevel.DEBUG);
 
 const initTracing = (serviceName) => {
   const jaegerExporter = new JaegerExporter({
@@ -25,7 +25,10 @@ const initTracing = (serviceName) => {
 
   // api.trace.setGlobalTracerProvider(provider);
   registerInstrumentations({
-    instrumentations: [new ExpressInstrumentation(), new HttpInstrumentation()],
+    instrumentations: [
+      // new ExpressInstrumentation(),
+      new HttpInstrumentation(),
+    ],
   });
 
   const tracer = provider.getTracer(serviceName);
