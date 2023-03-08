@@ -11,7 +11,6 @@ app.get('/videos/:videoId', async (req, res) => {
   const videoId = Number(req.params.videoId);
 
   const remoteContext = getContextFromRequest(req);
-  console.log('@@@  | ', remoteContext === api.ROOT_CONTEXT);
   const [wrapperSpan, wrapperContext] = startSpan(`GET /video/${videoId}`, remoteContext);
 
   const [dbSpan] = startSpan('Database | Get video', wrapperContext);
@@ -19,5 +18,6 @@ app.get('/videos/:videoId', async (req, res) => {
   dbSpan.end();
 
   res.send(video);
+
   wrapperSpan.end();
 });

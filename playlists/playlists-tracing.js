@@ -23,12 +23,8 @@ const initTracing = (serviceName) => {
   provider.addSpanProcessor(new SimpleSpanProcessor(jaegerExporter));
   provider.register();
 
-  // api.trace.setGlobalTracerProvider(provider);
   registerInstrumentations({
-    instrumentations: [
-      // new ExpressInstrumentation(),
-      new HttpInstrumentation(),
-    ],
+    instrumentations: [],
   });
 
   const tracer = provider.getTracer(serviceName);
