@@ -1,15 +1,11 @@
-const init = require('./videos-tracing.js');
-
-init('videos-service');
-
+const initTracing = require('./videos-tracing.js');
 const api = require('@opentelemetry/api');
-const express = require('express');
-const cors = require('cors');
 const { wait } = require('./videos-helpers.js');
 const videosDb = require('./videos-db.js');
+const { getContextFromRequest, startSpan } = initTracing('videos-service');
 
-const app = express();
-app.use(cors());
+const app = require('express')();
+app.use(require('cors')());
 app.listen(3000);
 
 app.get('/videos/:videoId', async (req, res) => {

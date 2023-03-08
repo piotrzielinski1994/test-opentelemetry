@@ -1,16 +1,12 @@
-const init = require('./playlists-tracing.js');
-
-init('playlists-service');
-
-const api = require('@opentelemetry/api');
-const express = require('express');
-const cors = require('cors');
+const initTracing = require('./playlists-tracing.js');
 const playlistsDb = require('./playlists-db');
 const { videosClient } = require('./playlists-clients');
+const api = require('@opentelemetry/api');
 
-const app = express();
+const { getContextFromRequest, startSpan } = initTracing('playlists-service');
 
-app.use(cors());
+const app = require('express')();
+app.use(require('cors')());
 app.listen(3000);
 
 app.get('/playlists', async (req, res) => {
@@ -28,14 +24,7 @@ app.get('/playlists', async (req, res) => {
 
     for (const videoId of playlist.videoIds) {
       // const [videoSpan] = startSpan(`videos-ms | Get ${videoId}`, wrapperContext);
-
-      const video = await videosClient.getVideo(videoId).catch((e) => {
-        // videoSpan.setStatus({
-        //   code: opentelemetry.SpanStatusCode.ERROR,
-        //   message: e.message,
-        // });
-        throw e;
-      });
+      const video = await videosClient.getVideo(videoId);
       videos.push(video);
       // videoSpan.end();
     }

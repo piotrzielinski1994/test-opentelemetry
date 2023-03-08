@@ -10,22 +10,40 @@ const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
 
 api.diag.setLogger(new api.DiagConsoleLogger(), api.DiagLogLevel.DEBUG);
 
-const init = function (serviceName) {
-  const traceExporter = new JaegerExporter({ endpoint: `http://jaeger:14268/api/traces` });
+const initTracing = (serviceName) => {
+  const jaegerExporter = new JaegerExporter({
+    endpoint: `http://jaeger:14268/api/traces`,
+  });
   const provider = new NodeTracerProvider({
     resource: new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
     }),
   });
 
-  provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+  provider.addSpanProcessor(new SimpleSpanProcessor(jaegerExporter));
   provider.register();
+
+  // api.trace.setGlobalTracerProvider(provider);
   registerInstrumentations({
     instrumentations: [new ExpressInstrumentation(), new HttpInstrumentation()],
   });
+
   const tracer = provider.getTracer(serviceName);
 
-  return { tracer };
+  return {
+    tracer: tracer,
+    startSpan: startSpan(tracer),
+    getContextFromRequest: getContextFromRequest,
+  };
 };
 
-module.exports = init;
+const startSpan = (tracer) => (name, parentContext) => {
+  const span = tracer.startSpan(name, {}, parentContext);
+  return [span, api.trace.setSpan(parentContext, span)];
+};
+
+const getContextFromRequest = (req) => {
+  return api.propagation.extract(api.ROOT_CONTEXT, req.headers);
+};
+
+module.exports = initTracing;
